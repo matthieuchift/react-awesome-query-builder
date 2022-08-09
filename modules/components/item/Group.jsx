@@ -296,18 +296,35 @@ export class BasicGroup extends PureComponent {
   renderConjs() {
     const {
       config, children1, id,
-      selectedConjunction, setConjunction, not, setNot, isLocked
+      selectedConjunction, setConjunction, not, setNot, isLocked, isRoot
     } = this.props;
 
     const {immutableGroupsMode, renderConjs: Conjs, showNot: _showNot, notLabel} = config.settings;
-    const conjunctionOptions = this.conjunctionOptions();
-    if (!this.showConjs())
-      return null;
-    if (!children1 || !children1.size)
-      return null;
+    var conjunctionOptions = this.conjunctionOptions();
+    if(config.settings.forceConjunctionRootGroup || config.settings.forceConjunctionSubGroup){
+      if (config.settings.forceConjunctionRootGroup && isRoot){
+        if(config.settings.forceConjunctionRootGroup == 'AND'){
+          delete conjunctionOptions.OR;
+        }else{
+          delete conjunctionOptions.AND;
+        }
+      }
+      if (config.settings.forceConjunctionSubGroup && !isRoot){
+        if(config.settings.forceConjunctionSubGroup == 'AND'){
+          delete conjunctionOptions.OR;
+        }else{
+          delete conjunctionOptions.AND;
+        }
+      }
+    }else{
+      if (!this.showConjs())
+        return null;
+      if (!children1 || !children1.size)
+        return null;
+    }
 
     const renderProps = {
-      disabled: this.isOneChild(),
+      disabled: this.isOneChild() || config.settings.forceConjunctionRootGroup || config.settings.forceConjunctionSubGroup,
       readonly: immutableGroupsMode || isLocked,
       selectedConjunction: selectedConjunction,
       setConjunction: immutableGroupsMode ? dummyFn : setConjunction,
